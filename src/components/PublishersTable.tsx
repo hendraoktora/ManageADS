@@ -1,13 +1,14 @@
 "use client";
 
 import { Publisher } from "@/lib/db";
-import { Globe, ExternalLink, Calendar, Eye, MousePointerClick, ShieldCheck } from "lucide-react";
+import { Globe, ExternalLink, Calendar, Eye, MousePointerClick, ShieldCheck, Trash2 } from "lucide-react";
 
 interface PublishersTableProps {
   publishers: Publisher[];
+  onDeleted?: () => void;
 }
 
-export default function PublishersTable({ publishers }: PublishersTableProps) {
+export default function PublishersTable({ publishers, onDeleted }: PublishersTableProps) {
   return (
     <div className="rounded-3xl bg-white p-7 shadow-bento border border-white">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -40,12 +41,13 @@ export default function PublishersTable({ publishers }: PublishersTableProps) {
               <th className="pb-3 text-right">Total Views</th>
               <th className="pb-3 text-right">Total Clicks</th>
               <th className="pb-3 text-right pr-2">CTR</th>
+              <th className="pb-3 text-center pr-2">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-xs">
             {publishers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-gray-400">
+                <td colSpan={8} className="py-8 text-center text-gray-400">
                   Belum ada website mitra yang memasang widget. Gunakan menu Simulator untuk mencoba!
                 </td>
               </tr>
@@ -122,6 +124,29 @@ export default function PublishersTable({ publishers }: PublishersTableProps) {
 
                     <td className="py-3.5 text-right pr-2 font-bold text-[#5A7E0D]">
                       {ctr}%
+                    </td>
+
+                    <td className="py-3.5 text-center pr-2">
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Apakah Anda yakin ingin menghapus domain ${pub.domain} dari daftar mitra?`)) return;
+                          try {
+                            const res = await fetch(`/api/publishers/${pub.id}`, { method: "DELETE" });
+                            if (res.ok) {
+                              if (onDeleted) onDeleted();
+                              else window.location.reload();
+                            } else {
+                              alert("Gagal menghapus domain mitra");
+                            }
+                          } catch (e) {
+                            alert("Terjadi kesalahan saat menghapus");
+                          }
+                        }}
+                        title="Hapus domain dari daftar mitra"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </td>
                   </tr>
                 );

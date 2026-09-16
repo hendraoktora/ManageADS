@@ -206,6 +206,17 @@ export async function deleteBanner(id: string): Promise<boolean> {
   return false;
 }
 
+export async function deletePublisher(id: string): Promise<boolean> {
+  const db = await ensureDb();
+  const initialLength = db.publishers.length;
+  db.publishers = db.publishers.filter((p) => p.id !== id);
+  if (db.publishers.length !== initialLength) {
+    await saveDb(db);
+    return true;
+  }
+  return false;
+}
+
 // Ambang batas keaktifan domain mitra: jika tidak ada impresi dalam 48 jam, status dianggap tidak aktif
 export const INACTIVE_THRESHOLD_MS = 48 * 60 * 60 * 1000; // 48 jam
 

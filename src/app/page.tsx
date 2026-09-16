@@ -220,7 +220,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 4: Website Mitra yang Memasang Widget */}
-      <PublishersTable publishers={publishers} />
+      <PublishersTable publishers={publishers} onDeleted={fetchData} />
 
       {/* Modals */}
       {selectedEmbedBanner && (

@@ -82,7 +82,7 @@ export default function PublishersPage() {
       </div>
 
       {/* Main Table */}
-      <PublishersTable publishers={filtered} />
+      <PublishersTable publishers={filtered} onDeleted={fetchPublishers} />
     </main>
   );
 }
