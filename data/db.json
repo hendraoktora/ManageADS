@@ -1,0 +1,175 @@
+{
+  "banners": [
+    {
+      "id": "ban-01",
+      "name": "Promo Spesial Landing Page Web Utama",
+      "targetUrl": "https://mywebsite.com/promo-exclusive",
+      "imageUrl": "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=728&h=90&fit=crop&q=80",
+      "altText": "Tingkatkan Konversi Bisnis Anda bersama Kami",
+      "size": "728x90",
+      "backlinkRel": "dofollow",
+      "isActive": true,
+      "createdAt": "2026-09-02T03:12:02.795Z",
+      "updatedAt": "2026-09-16T03:29:23.162Z",
+      "views": 14255,
+      "clicks": 861
+    },
+    {
+      "id": "ban-02",
+      "name": "Sidebar Widget Diskon 50%",
+      "targetUrl": "https://mywebsite.com/flash-sale",
+      "imageUrl": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=300&h=250&fit=crop&q=80",
+      "altText": "Diskon 50% Layanan Unggulan",
+      "size": "300x250",
+      "backlinkRel": "dofollow",
+      "isActive": true,
+      "createdAt": "2026-09-09T03:12:02.798Z",
+      "updatedAt": "2026-09-16T03:12:02.798Z",
+      "views": 8940,
+      "clicks": 412
+    }
+  ],
+  "publishers": [
+    {
+      "id": "pub-mu3jj2mx",
+      "domain": "null",
+      "firstSeenAt": "2026-09-16T03:28:01.305Z",
+      "lastActiveAt": "2026-09-16T03:29:26.739Z",
+      "status": "ACTIVE",
+      "totalViews": 3,
+      "totalClicks": 0,
+      "installedBanners": [
+        "ban-01"
+      ]
+    },
+    {
+      "id": "pub-mu3j0tic",
+      "domain": "detik-mitra-terkini.com",
+      "firstSeenAt": "2026-09-16T03:13:49.668Z",
+      "lastActiveAt": "2026-09-16T03:13:49.704Z",
+      "status": "ACTIVE",
+      "totalViews": 1,
+      "totalClicks": 1,
+      "installedBanners": [
+        "ban-01"
+      ]
+    },
+    {
+      "id": "pub-mu3izbb0",
+      "domain": "tribun-test-mitra.com",
+      "firstSeenAt": "2026-09-16T03:12:39.420Z",
+      "lastActiveAt": "2026-09-16T03:12:39.420Z",
+      "status": "ACTIVE",
+      "totalViews": 1,
+      "totalClicks": 0,
+      "installedBanners": [
+        "ban-01"
+      ]
+    },
+    {
+      "id": "pub-01",
+      "domain": "portalberita-terkini.com",
+      "firstSeenAt": "2026-09-02T03:12:02.798Z",
+      "lastActiveAt": "2026-09-16T03:12:02.798Z",
+      "status": "ACTIVE",
+      "totalViews": 8400,
+      "totalClicks": 520,
+      "installedBanners": [
+        "ban-01"
+      ]
+    },
+    {
+      "id": "pub-02",
+      "domain": "blogbisnis-indonesia.id",
+      "firstSeenAt": "2026-09-06T03:12:02.798Z",
+      "lastActiveAt": "2026-09-16T03:12:02.798Z",
+      "status": "ACTIVE",
+      "totalViews": 5850,
+      "totalClicks": 340,
+      "installedBanners": [
+        "ban-01",
+        "ban-02"
+      ]
+    },
+    {
+      "id": "pub-03",
+      "domain": "forumkomunitas-digital.net",
+      "firstSeenAt": "2026-09-11T03:12:02.798Z",
+      "lastActiveAt": "2026-09-16T03:12:02.798Z",
+      "status": "ACTIVE",
+      "totalViews": 3940,
+      "totalClicks": 212,
+      "installedBanners": [
+        "ban-02"
+      ]
+    },
+    {
+      "id": "pub-04",
+      "domain": "media-teknologi-review.org",
+      "firstSeenAt": "2026-08-22T03:12:02.798Z",
+      "lastActiveAt": "2026-09-04T03:12:02.798Z",
+      "status": "INACTIVE",
+      "totalViews": 1200,
+      "totalClicks": 45,
+      "installedBanners": [
+        "ban-01"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "ev-mu3jkwk3-6i75",
+      "bannerId": "ban-01",
+      "type": "VIEW",
+      "domain": "null",
+      "ipHash": "Ojox",
+      "device": "desktop",
+      "timestamp": "2026-09-16T03:29:26.739Z"
+    },
+    {
+      "id": "ev-mu3jki36-zpk4",
+      "bannerId": "ban-01",
+      "type": "VIEW",
+      "domain": "null",
+      "ipHash": "Ojox",
+      "device": "desktop",
+      "timestamp": "2026-09-16T03:29:07.986Z"
+    },
+    {
+      "id": "ev-mu3jj2mx-rnom",
+      "bannerId": "ban-01",
+      "type": "VIEW",
+      "domain": "null",
+      "ipHash": "Ojox",
+      "device": "desktop",
+      "timestamp": "2026-09-16T03:28:01.305Z"
+    },
+    {
+      "id": "ev-mu3j0tjc-7pxd",
+      "bannerId": "ban-01",
+      "type": "CLICK",
+      "domain": "detik-mitra-terkini.com",
+      "ipHash": "Ojox",
+      "device": "desktop",
+      "timestamp": "2026-09-16T03:13:49.704Z"
+    },
+    {
+      "id": "ev-mu3j0tic-q07l",
+      "bannerId": "ban-01",
+      "type": "VIEW",
+      "domain": "detik-mitra-terkini.com",
+      "ipHash": "Ojox",
+      "device": "desktop",
+      "timestamp": "2026-09-16T03:13:49.668Z"
+    },
+    {
+      "id": "ev-mu3izbb0-eoc7",
+      "bannerId": "ban-01",
+      "type": "VIEW",
+      "domain": "tribun-test-mitra.com",
+      "ipHash": "Ojox",
+      "device": "desktop",
+      "timestamp": "2026-09-16T03:12:39.420Z"
+    }
+  ]
+}
