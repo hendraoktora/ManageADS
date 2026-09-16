@@ -13,6 +13,7 @@ export default function EmbedModal({ banner, onClose }: EmbedModalProps) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<"js" | "html" | "mobile">("js");
   const [mobileType, setMobileType] = useState<"webview" | "api">("webview");
+  const [apiLang, setApiLang] = useState<"fetch" | "flutter" | "kotlin" | "swift" | "curl">("fetch");
   const [host, setHost] = useState("");
 
   useEffect(() => {
@@ -46,28 +47,90 @@ export default function EmbedModal({ banner, onClose }: EmbedModalProps) {
   </a>
 </div>`;
 
-  const mobileApiCode = `// 1. AMBIL DATA IKLAN & CATAT IMPRESI VIEW (GET HTTP):
-// GET ${origin}/api/b/${banner.id}?ref=app.nama-mitra.com
-//
-// CONTOH RESPONSE JSON:
-// {
-//   "success": true,
-//   "banner": {
-//     "id": "${banner.id}",
-//     "imageUrl": "${banner.imageUrl}",
-//     "targetUrl": "${banner.targetUrl}",
-//     "altText": "${banner.altText}",
-//     "size": "${banner.size}"
-//   }
-// }
+  const apiSnippets = {
+    fetch: `// [React Native / JavaScript]
+// 1. Ambil data banner (otomatis mencatat +1 View di dashboard):
+const res = await fetch('${origin}/api/b/${banner.id}?ref=app.nama-mitra.com');
+const { banner } = await res.json();
+// banner.imageUrl -> Tampilkan di <Image source={{ uri: banner.imageUrl }} />
+// banner.targetUrl -> URL tujuan backlink
 
-// 2. CATAT KLIK SAAT BANNER DI-TAP DI APLIKASI (POST HTTP BACKGROUND):
-// POST ${origin}/api/c/${banner.id}?beacon=1&ref=app.nama-mitra.com`;
+// 2. Saat user mengetuk/klik banner di aplikasi:
+const onBannerPress = () => {
+  Linking.openURL(banner.targetUrl);
+  // Kirim sinyal klik di background:
+  fetch('${origin}/api/c/${banner.id}?beacon=1&ref=app.nama-mitra.com', { method: 'POST' });
+};`,
+    flutter: `// [Flutter / Dart]
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+
+// 1. Ambil data banner (otomatis mencatat +1 View):
+final res = await http.get(Uri.parse('${origin}/api/b/${banner.id}?ref=app.nama-mitra.com'));
+final data = jsonDecode(res.body);
+final banner = data['banner'];
+
+// 2. Saat banner di-tap:
+void onBannerTap() {
+  launchUrl(Uri.parse(banner['targetUrl']));
+  // Kirim sinyal klik:
+  http.post(Uri.parse('${origin}/api/c/${banner.id}?beacon=1&ref=app.nama-mitra.com'));
+}`,
+    kotlin: `// [Android Native - Kotlin]
+// 1. Ambil data banner (GET HTTP):
+val request = Request.Builder()
+    .url("${origin}/api/b/${banner.id}?ref=app.nama-mitra.com")
+    .build()
+
+client.newCall(request).enqueue(object : Callback {
+    override fun onResponse(call: Call, response: Response) {
+        val json = JSONObject(response.body!!.string())
+        val banner = json.getJSONObject("banner")
+        val imageUrl = banner.getString("imageUrl")
+        val targetUrl = banner.getString("targetUrl")
+        // Tampilkan gambar dengan Glide / Coil
+    }
+    override fun onFailure(call: Call, e: IOException) {}
+})
+
+// 2. Saat banner di-klik (Buka Browser & Catat Klik):
+val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl))
+context.startActivity(browserIntent)
+val clickReq = Request.Builder()
+    .url("${origin}/api/c/${banner.id}?beacon=1&ref=app.nama-mitra.com")
+    .post(RequestBody.create(null, ByteArray(0)))
+    .build()
+client.newCall(clickReq).enqueue(...)`,
+    swift: `// [iOS Native - Swift]
+// 1. Ambil data banner (GET HTTP):
+let url = URL(string: "${origin}/api/b/${banner.id}?ref=app.nama-mitra.com")!
+URLSession.shared.dataTask(with: url) { data, _, _ in
+    guard let data = data,
+          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let banner = json["banner"] as? [String: Any] else { return }
+    let imageUrl = banner["imageUrl"] as? String
+    let targetUrl = banner["targetUrl"] as? String
+    // Muat imageUrl ke AsyncImage / UIImageView
+}.resume()
+
+// 2. Saat banner di-tap:
+UIApplication.shared.open(URL(string: targetUrl)!)
+var req = URLRequest(url: URL(string: "${origin}/api/c/${banner.id}?beacon=1&ref=app.nama-mitra.com")!)
+req.httpMethod = "POST"
+URLSession.shared.dataTask(with: req).resume()`,
+    curl: `# [cURL / HTTP Request Raw]
+# 1. Ambil data banner dalam JSON (otomatis mencatat view):
+curl -X GET "${origin}/api/b/${banner.id}?ref=app.nama-mitra.com"
+
+# 2. Catat event klik saat banner di-tap:
+curl -X POST "${origin}/api/c/${banner.id}?beacon=1&ref=app.nama-mitra.com"`,
+  };
 
   let activeCode = jsCode;
   if (tab === "html") activeCode = htmlCode;
   else if (tab === "mobile") {
-    activeCode = mobileType === "webview" ? mobileWebViewCode : mobileApiCode;
+    activeCode = mobileType === "webview" ? mobileWebViewCode : apiSnippets[apiLang];
   }
 
   const handleCopy = () => {
@@ -157,6 +220,32 @@ export default function EmbedModal({ banner, onClose }: EmbedModalProps) {
             >
               REST API (Native JSON)
             </button>
+          </div>
+        )}
+
+        {/* Language selector for REST API */}
+        {tab === "mobile" && mobileType === "api" && (
+          <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+            <span className="text-[11px] font-bold text-gray-400 mr-1">Bahasa / Framework:</span>
+            {[
+              { id: "fetch", label: "React Native (JS)" },
+              { id: "flutter", label: "Flutter (Dart)" },
+              { id: "kotlin", label: "Android (Kotlin)" },
+              { id: "swift", label: "iOS (Swift)" },
+              { id: "curl", label: "cURL / Raw" },
+            ].map((lang) => (
+              <button
+                key={lang.id}
+                onClick={() => setApiLang(lang.id as any)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  apiLang === lang.id
+                    ? "bg-gray-900 text-white shadow-xs"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {lang.label}
+              </button>
+            ))}
           </div>
         )}
 
