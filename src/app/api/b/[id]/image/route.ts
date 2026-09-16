@@ -22,7 +22,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 
   // Rekam impression dari direct image request
-  const referrer = req.headers.get("referer") || req.headers.get("origin") || "";
+  const url = new URL(req.url);
+  const referrer = url.searchParams.get("ref") || req.headers.get("referer") || req.headers.get("origin") || "";
   const userAgent = req.headers.get("user-agent") || "";
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
 
