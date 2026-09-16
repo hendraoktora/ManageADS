@@ -9,18 +9,18 @@ import PublishersTable from "@/components/PublishersTable";
 import EmbedModal from "@/components/EmbedModal";
 import CreateBannerModal from "@/components/CreateBannerModal";
 import { Banner, Publisher } from "@/lib/db";
-import { Code2, Edit3, ExternalLink, Sparkles, Plus, Image as ImageIcon } from "lucide-react";
+import { Code2, Edit3, ExternalLink, Sparkles, Plus, Image as ImageIcon, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [stats, setStats] = useState({
-    totalViews: 23190,
-    totalClicks: 1272,
-    ctr: "5.48",
-    activePublishers: 3,
-    totalPublishers: 4,
+    totalViews: 0,
+    totalClicks: 0,
+    ctr: "0.00",
+    activePublishers: 0,
+    totalPublishers: 0,
   });
 
   const [selectedEmbedBanner, setSelectedEmbedBanner] = useState<Banner | null>(null);
@@ -46,6 +46,29 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus banner ini?")) return;
+    try {
+      await fetch(`/api/banners/${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (err) {
+      alert("Gagal menghapus banner");
+    }
+  };
+
+  const handleToggleStatus = async (banner: Banner) => {
+    try {
+      await fetch(`/api/banners/${banner.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !banner.isActive }),
+      });
+      fetchData();
+    } catch (err) {
+      alert("Gagal memperbarui status");
+    }
+  };
 
   return (
     <main className="space-y-7 pb-12">
@@ -119,7 +142,7 @@ export default function DashboardPage() {
               </button>
             </div>
           ) : (
-            banners.slice(0, 2).map((banner) => (
+            banners.map((banner) => (
             <div
               key={banner.id}
               className="rounded-2xl border border-gray-100 p-5 hover:border-gray-300 transition-all bg-gray-50/40 flex flex-col justify-between"
@@ -127,9 +150,22 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <span className="text-xs font-bold text-gray-800 line-clamp-1">{banner.name}</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D5F639]/60 text-gray-900 border border-[#8DB81B]/30">
-                    {banner.size}
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleToggleStatus(banner)}
+                      title={banner.isActive ? "Klik untuk Nonaktifkan" : "Klik untuk Aktifkan"}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors ${
+                        banner.isActive
+                          ? "bg-[#D5F639]/50 text-gray-900 border-[#8DB81B]/40"
+                          : "bg-gray-200 text-gray-500 border-gray-300"
+                      }`}
+                    >
+                      {banner.isActive ? "Aktif" : "Non-Aktif"}
+                    </button>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-gray-600 border border-gray-200">
+                      {banner.size}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Banner Image Preview */}
@@ -165,9 +201,17 @@ export default function DashboardPage() {
                 <button
                   onClick={() => setBannerToEdit(banner)}
                   className="py-2 px-3 rounded-full bg-white hover:bg-gray-100 border border-gray-200 text-gray-800 text-xs font-bold flex items-center gap-1 transition-all"
+                  title="Ganti Visual & Link"
                 >
                   <Edit3 size={13} />
-                  <span>Ganti Visual</span>
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={() => handleDelete(banner.id)}
+                  className="p-2 rounded-full bg-white hover:bg-rose-50 border border-gray-200 text-rose-500 hover:text-rose-700 transition-colors"
+                  title="Hapus Banner Ini"
+                >
+                  <Trash2 size={15} />
                 </button>
               </div>
             </div>

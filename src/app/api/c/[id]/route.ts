@@ -4,7 +4,7 @@ import { getBannerById, recordEvent } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const banner = getBannerById(params.id);
+  const banner = await getBannerById(params.id);
   const url = new URL(req.url);
 
   // Jika banner tidak ditemukan, redirect ke fallback
@@ -18,7 +18,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
 
   // Rekam klik
-  recordEvent({
+  await recordEvent({
     bannerId: banner.id,
     type: "CLICK",
     referrer,

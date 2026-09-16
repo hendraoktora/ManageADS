@@ -4,7 +4,7 @@ import { getBanners, createBanner } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const banners = getBanners();
+  const banners = await getBanners();
   return NextResponse.json({ success: true, data: banners });
 }
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const banner = createBanner({
+    const banner = await createBanner({
       name,
       targetUrl,
       imageUrl,

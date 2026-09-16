@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getBannerById, updateBanner, deleteBanner } from "@/lib/db";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const banner = getBannerById(params.id);
+  const banner = await getBannerById(params.id);
   if (!banner) {
     return NextResponse.json({ success: false, message: "Banner tidak ditemukan" }, { status: 404 });
   }
@@ -12,7 +12,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
-    const updated = updateBanner(params.id, body);
+    const updated = await updateBanner(params.id, body);
     if (!updated) {
       return NextResponse.json({ success: false, message: "Banner tidak ditemukan" }, { status: 404 });
     }
@@ -23,7 +23,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  const deleted = deleteBanner(params.id);
+  const deleted = await deleteBanner(params.id);
   if (!deleted) {
     return NextResponse.json({ success: false, message: "Banner tidak ditemukan" }, { status: 404 });
   }

@@ -4,7 +4,7 @@ import { getBannerById, recordEvent } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const banner = getBannerById(params.id);
+  const banner = await getBannerById(params.id);
 
   if (!banner || !banner.isActive) {
     // 1x1 transparent GIF jika tidak ditemukan atau non-aktif
@@ -26,7 +26,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const userAgent = req.headers.get("user-agent") || "";
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
 
-  recordEvent({
+  await recordEvent({
     bannerId: banner.id,
     type: "VIEW",
     referrer,

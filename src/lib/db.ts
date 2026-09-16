@@ -43,6 +43,12 @@ interface DatabaseSchema {
   events: EventLog[];
 }
 
+// Konfigurasi Cloud Database (Upstash Redis / Vercel KV)
+const KV_URL = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "").replace(/\/$/, "");
+const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const IS_CLOUD_DB = Boolean(KV_URL && KV_TOKEN);
+
+// Konfigurasi File Storage Lokal (jika belum memakai Cloud Database)
 const DATA_DIR = process.env.VERCEL
   ? path.join("/tmp", "manageads-data")
   : path.join(process.cwd(), "data");
@@ -54,43 +60,112 @@ const SEED_DATA: DatabaseSchema = {
   events: [],
 };
 
-// Pastikan direktori data ada
-function ensureDb(): DatabaseSchema {
+// In-Memory Cache untuk performa tinggi
+let memoryCache: DatabaseSchema | null = null;
+let lastFetchTime = 0;
+const CACHE_TTL = 3000; // 3 detik
+
+async function ensureDb(): Promise<DatabaseSchema> {
+  // 1. Jika terhubung ke Cloud Database (Upstash / Vercel KV)
+  if (IS_CLOUD_DB) {
+    if (memoryCache && Date.now() - lastFetchTime < CACHE_TTL) {
+      return memoryCache;
+    }
+
+    try {
+      const res = await fetch(`${KV_URL}/get/manageads_db`, {
+        headers: { Authorization: `Bearer ${KV_TOKEN}` },
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.result) {
+          const parsed = typeof json.result === "string" ? JSON.parse(json.result) : json.result;
+          memoryCache = {
+            banners: parsed.banners || [],
+            publishers: parsed.publishers || [],
+            events: parsed.events || [],
+          };
+          lastFetchTime = Date.now();
+          return memoryCache;
+        }
+      }
+    } catch (err) {
+      console.error("[ManageADS Cloud DB] Gagal membaca dari Redis:", err);
+    }
+
+    if (!memoryCache) memoryCache = { ...SEED_DATA };
+    return memoryCache;
+  }
+
+  // 2. Fallback: File Storage Lokal (SSD di komputer Anda / tmp di Vercel)
   if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+    try {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    } catch (e) {}
   }
 
   if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(SEED_DATA, null, 2), "utf-8");
-    return SEED_DATA;
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(SEED_DATA, null, 2), "utf-8");
+    } catch (e) {}
+    return { ...SEED_DATA };
   }
 
   try {
     const raw = fs.readFileSync(DB_FILE, "utf-8");
     return JSON.parse(raw) as DatabaseSchema;
   } catch (err) {
-    console.error("Gagal membaca db.json, mengembalikan data default:", err);
-    return SEED_DATA;
+    return { ...SEED_DATA };
   }
 }
 
-function saveDb(data: DatabaseSchema): void {
-  ensureDb();
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+async function saveDb(data: DatabaseSchema): Promise<void> {
+  memoryCache = data;
+  lastFetchTime = Date.now();
+
+  // 1. Simpan ke Cloud Database
+  if (IS_CLOUD_DB) {
+    try {
+      await fetch(`${KV_URL}/set/manageads_db`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${KV_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        cache: "no-store",
+      });
+      return;
+    } catch (err) {
+      console.error("[ManageADS Cloud DB] Gagal menyimpan ke Redis:", err);
+    }
+  }
+
+  // 2. Simpan ke File Lokal
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (e) {}
 }
 
-export function getBanners(): Banner[] {
-  const db = ensureDb();
+export async function getBanners(): Promise<Banner[]> {
+  const db = await ensureDb();
   return db.banners;
 }
 
-export function getBannerById(id: string): Banner | undefined {
-  const db = ensureDb();
+export async function getBannerById(id: string): Promise<Banner | undefined> {
+  const db = await ensureDb();
   return db.banners.find((b) => b.id === id);
 }
 
-export function createBanner(data: Omit<Banner, "id" | "createdAt" | "updatedAt" | "views" | "clicks">): Banner {
-  const db = ensureDb();
+export async function createBanner(
+  data: Omit<Banner, "id" | "createdAt" | "updatedAt" | "views" | "clicks">
+): Promise<Banner> {
+  const db = await ensureDb();
   const id = `ban-${Date.now().toString(36)}`;
   const now = new Date().toISOString();
   const newBanner: Banner = {
@@ -102,12 +177,12 @@ export function createBanner(data: Omit<Banner, "id" | "createdAt" | "updatedAt"
     clicks: 0,
   };
   db.banners.unshift(newBanner);
-  saveDb(db);
+  await saveDb(db);
   return newBanner;
 }
 
-export function updateBanner(id: string, updates: Partial<Banner>): Banner | null {
-  const db = ensureDb();
+export async function updateBanner(id: string, updates: Partial<Banner>): Promise<Banner | null> {
+  const db = await ensureDb();
   const index = db.banners.findIndex((b) => b.id === id);
   if (index === -1) return null;
 
@@ -116,34 +191,34 @@ export function updateBanner(id: string, updates: Partial<Banner>): Banner | nul
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  saveDb(db);
+  await saveDb(db);
   return db.banners[index];
 }
 
-export function deleteBanner(id: string): boolean {
-  const db = ensureDb();
+export async function deleteBanner(id: string): Promise<boolean> {
+  const db = await ensureDb();
   const initialLength = db.banners.length;
   db.banners = db.banners.filter((b) => b.id !== id);
   if (db.banners.length !== initialLength) {
-    saveDb(db);
+    await saveDb(db);
     return true;
   }
   return false;
 }
 
-export function getPublishers(): Publisher[] {
-  const db = ensureDb();
+export async function getPublishers(): Promise<Publisher[]> {
+  const db = await ensureDb();
   return db.publishers;
 }
 
-export function recordEvent(params: {
+export async function recordEvent(params: {
   bannerId: string;
   type: "VIEW" | "CLICK";
   referrer: string;
   userAgent?: string;
   ip?: string;
-}) {
-  const db = ensureDb();
+}): Promise<void> {
+  const db = await ensureDb();
   const banner = db.banners.find((b) => b.id === params.bannerId);
   if (!banner) return;
 
@@ -197,7 +272,7 @@ export function recordEvent(params: {
   if (params.type === "VIEW") banner.views += 1;
   if (params.type === "CLICK") banner.clicks += 1;
 
-  // 5. Simpan event log (batasi maksimal 2000 log terbaru agar tidak membesar)
+  // 5. Simpan event log
   const event: EventLog = {
     id: `ev-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 4)}`,
     bannerId: params.bannerId,
@@ -213,11 +288,11 @@ export function recordEvent(params: {
     db.events = db.events.slice(0, 2000);
   }
 
-  saveDb(db);
+  await saveDb(db);
 }
 
-export function getStats() {
-  const db = ensureDb();
+export async function getStats(): Promise<any> {
+  const db = await ensureDb();
   const totalViews = db.banners.reduce((sum, b) => sum + b.views, 0);
   const totalClicks = db.banners.reduce((sum, b) => sum + b.clicks, 0);
   const ctr = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(2) : "0.00";
@@ -250,14 +325,15 @@ export function getStats() {
     totalPublishers,
     activeBanners: db.banners.filter((b) => b.isActive).length,
     chartData: Object.values(days),
+    isCloudDb: IS_CLOUD_DB,
   };
 }
 
-export function clearDatabase(): void {
+export async function clearDatabase(): Promise<void> {
   const emptyDb: DatabaseSchema = {
     banners: [],
     publishers: [],
     events: [],
   };
-  saveDb(emptyDb);
+  await saveDb(emptyDb);
 }
