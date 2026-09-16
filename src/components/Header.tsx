@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Search, Sparkles, Plus } from "lucide-react";
 
 interface HeaderProps {
@@ -7,11 +8,25 @@ interface HeaderProps {
 }
 
 export default function Header({ onOpenCreate }: HeaderProps) {
+  const [username, setUsername] = useState<string>("Admin");
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.authenticated && data?.user?.username) {
+          const u = data.user.username;
+          setUsername(u.charAt(0).toUpperCase() + u.slice(1));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-7">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
-          Hi, Hendra!
+          Hi, {username}!
           <span className="inline-block animate-wave">👋</span>
         </h1>
         <p className="text-sm text-gray-500 mt-0.5">
