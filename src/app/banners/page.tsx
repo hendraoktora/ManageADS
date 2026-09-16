@@ -78,7 +78,24 @@ export default function BannersPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {banners.map((banner) => (
+          {banners.length === 0 ? (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 py-16 text-center bg-gray-50/60 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[#8DB81B]/15 flex items-center justify-center text-[#5A7E0D] mb-3">
+                <ImageIcon size={24} />
+              </div>
+              <h3 className="text-sm font-bold text-gray-800">Belum ada banner iklan</h3>
+              <p className="text-xs text-gray-500 mt-1 max-w-sm">
+                Mulai kampanye Anda dengan membuat banner iklan pertama untuk dipasang di website mitra.
+              </p>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="mt-4 px-5 py-2.5 rounded-full bg-[#111827] hover:bg-black text-[#D5F639] text-xs font-bold transition-all shadow-sm"
+              >
+                + Buat Banner Baru Sekarang
+              </button>
+            </div>
+          ) : (
+            banners.map((banner) => (
             <div
               key={banner.id}
               className="rounded-3xl border border-gray-100 p-5 bg-gray-50/40 hover:border-gray-300 transition-all flex flex-col justify-between"
@@ -155,7 +172,7 @@ export default function BannersPage() {
                 </button>
               </div>
             </div>
-          ))}
+          )))}
         </div>
       </div>
 

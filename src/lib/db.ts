@@ -49,78 +49,8 @@ const DATA_DIR = process.env.VERCEL
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 const SEED_DATA: DatabaseSchema = {
-  banners: [
-    {
-      id: "ban-01",
-      name: "Promo Spesial Landing Page Web Utama",
-      targetUrl: "https://mywebsite.com/promo-exclusive",
-      imageUrl: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=728&h=90&fit=crop&q=80",
-      altText: "Tingkatkan Konversi Bisnis Anda bersama Kami",
-      size: "728x90",
-      backlinkRel: "dofollow",
-      isActive: true,
-      createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-      updatedAt: new Date().toISOString(),
-      views: 14250,
-      clicks: 860,
-    },
-    {
-      id: "ban-02",
-      name: "Sidebar Widget Diskon 50%",
-      targetUrl: "https://mywebsite.com/flash-sale",
-      imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=300&h=250&fit=crop&q=80",
-      altText: "Diskon 50% Layanan Unggulan",
-      size: "300x250",
-      backlinkRel: "dofollow",
-      isActive: true,
-      createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-      updatedAt: new Date().toISOString(),
-      views: 8940,
-      clicks: 412,
-    },
-  ],
-  publishers: [
-    {
-      id: "pub-01",
-      domain: "portalberita-terkini.com",
-      firstSeenAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      status: "ACTIVE",
-      totalViews: 8400,
-      totalClicks: 520,
-      installedBanners: ["ban-01"],
-    },
-    {
-      id: "pub-02",
-      domain: "blogbisnis-indonesia.id",
-      firstSeenAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      status: "ACTIVE",
-      totalViews: 5850,
-      totalClicks: 340,
-      installedBanners: ["ban-01", "ban-02"],
-    },
-    {
-      id: "pub-03",
-      domain: "forumkomunitas-digital.net",
-      firstSeenAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      status: "ACTIVE",
-      totalViews: 3940,
-      totalClicks: 212,
-      installedBanners: ["ban-02"],
-    },
-    {
-      id: "pub-04",
-      domain: "media-teknologi-review.org",
-      firstSeenAt: new Date(Date.now() - 25 * 86400000).toISOString(),
-      lastActiveAt: new Date(Date.now() - 12 * 86400000).toISOString(),
-      status: "INACTIVE",
-      totalViews: 1200,
-      totalClicks: 45,
-      installedBanners: ["ban-01"],
-    },
-  ],
+  banners: [],
+  publishers: [],
   events: [],
 };
 
@@ -302,16 +232,14 @@ export function getStats() {
     days[key] = { date: key, views: 0, clicks: 0 };
   }
 
-  // Isi data chart dari event log atau data proporsional
-  const dayKeys = Object.keys(days);
-  const baseViewsPerDay = Math.round(totalViews / 14);
-  const baseClicksPerDay = Math.round(totalClicks / 14);
-
-  dayKeys.forEach((key, idx) => {
-    // Variasi acak realistis untuk visual grafik
-    const variance = (idx % 3 === 0 ? 1.2 : 0.85) * (1 + idx * 0.05);
-    days[key].views = Math.max(10, Math.round(baseViewsPerDay * variance));
-    days[key].clicks = Math.max(1, Math.round(baseClicksPerDay * variance));
+  // Hitung jumlah view dan click harian secara akurat dari event log riil
+  db.events.forEach((ev) => {
+    const d = new Date(ev.timestamp);
+    const key = d.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" });
+    if (days[key]) {
+      if (ev.type === "VIEW") days[key].views += 1;
+      if (ev.type === "CLICK") days[key].clicks += 1;
+    }
   });
 
   return {
@@ -323,4 +251,13 @@ export function getStats() {
     activeBanners: db.banners.filter((b) => b.isActive).length,
     chartData: Object.values(days),
   };
+}
+
+export function clearDatabase(): void {
+  const emptyDb: DatabaseSchema = {
+    banners: [],
+    publishers: [],
+    events: [],
+  };
+  saveDb(emptyDb);
 }
