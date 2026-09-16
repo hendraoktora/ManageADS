@@ -83,13 +83,20 @@ export default function PublishersTable({ publishers }: PublishersTableProps) {
 
                     <td className="py-3.5">
                       {pub.status === "ACTIVE" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D5F639]/50 text-gray-900 border border-[#8DB81B]/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#8DB81B]"></span>
+                        <span 
+                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D5F639]/50 text-gray-900 border border-[#8DB81B]/30"
+                          title="Aktif (Terdeteksi ada tayangan/klik dalam 48 jam terakhir)"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#8DB81B] animate-pulse"></span>
                           Aktif
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
-                          Non-Aktif
+                        <span 
+                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200"
+                          title="Tidak ada impresi dalam 48 jam terakhir (otomatis aktif kembali jika ada view/klik baru)"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                          Non-Aktif (&gt;48 jam)
                         </span>
                       )}
                     </td>

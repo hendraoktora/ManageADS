@@ -206,9 +206,20 @@ export async function deleteBanner(id: string): Promise<boolean> {
   return false;
 }
 
+// Ambang batas keaktifan domain mitra: jika tidak ada impresi dalam 48 jam, status dianggap tidak aktif
+export const INACTIVE_THRESHOLD_MS = 48 * 60 * 60 * 1000; // 48 jam
+
 export async function getPublishers(): Promise<Publisher[]> {
   const db = await ensureDb();
-  return db.publishers;
+  const now = Date.now();
+  return db.publishers.map((p) => {
+    const lastActive = new Date(p.lastActiveAt).getTime();
+    const isActive = now - lastActive <= INACTIVE_THRESHOLD_MS;
+    return {
+      ...p,
+      status: isActive ? "ACTIVE" : "INACTIVE",
+    };
+  });
 }
 
 export async function recordEvent(params: {
@@ -296,7 +307,11 @@ export async function getStats(): Promise<any> {
   const totalViews = db.banners.reduce((sum, b) => sum + b.views, 0);
   const totalClicks = db.banners.reduce((sum, b) => sum + b.clicks, 0);
   const ctr = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(2) : "0.00";
-  const activePublishers = db.publishers.filter((p) => p.status === "ACTIVE").length;
+  const now = Date.now();
+  const activePublishers = db.publishers.filter((p) => {
+    const lastActive = new Date(p.lastActiveAt).getTime();
+    return now - lastActive <= INACTIVE_THRESHOLD_MS;
+  }).length;
   const totalPublishers = db.publishers.length;
 
   // Generate chart timeline 7 hari terakhir
