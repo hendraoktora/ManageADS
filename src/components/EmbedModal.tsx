@@ -24,17 +24,17 @@ export default function EmbedModal({ banner, onClose }: EmbedModalProps) {
 
   const origin = host || "https://domain-anda.com";
 
-  const jsCode = `<!-- ManageADS Dynamic Smart Widget (Auto-Updates) -->
+  const jsCode = `<!-- ManageADS Dynamic Smart Widget (Auto-Updates & Direct Backlink) -->
 <div id="mads-${banner.id}" data-mads-banner="${banner.id}" data-mads-host="${origin}"></div>
 <script src="${origin}/widget.js" async></script>
 <noscript>
-  <a href="${origin}/api/c/${banner.id}" target="_blank" rel="${banner.backlinkRel}">
+  <a href="${banner.targetUrl}" target="_blank" rel="${banner.backlinkRel}">
     <img src="${origin}/api/b/${banner.id}/image" alt="${banner.altText}" style="max-width:100%; height:auto;" />
   </a>
 </noscript>`;
 
-  const htmlCode = `<!-- ManageADS Pure SEO Backlink HTML (100% Crawlable) -->
-<a href="${origin}/api/c/${banner.id}" target="_blank" rel="${banner.backlinkRel}">
+  const htmlCode = `<!-- ManageADS Pure SEO Direct Backlink HTML (100% Crawlable to Target) -->
+<a href="${banner.targetUrl}" target="_blank" rel="${banner.backlinkRel}" onclick="if(navigator.sendBeacon){navigator.sendBeacon('${origin}/api/c/${banner.id}?beacon=1&ref='+encodeURIComponent(location.href))}else{new Image().src='${origin}/api/c/${banner.id}?beacon=1&ref='+encodeURIComponent(location.href)}">
   <img src="${origin}/api/b/${banner.id}/image" alt="${banner.altText}" style="max-width:100%; height:auto; border-radius:8px;" />
 </a>`;
 

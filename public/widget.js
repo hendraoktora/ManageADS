@@ -69,7 +69,8 @@
     container.style.lineHeight = "0";
 
     var link = document.createElement("a");
-    link.href = clickUrl;
+    // Direct Backlink ke URL target asli (agar Googlebot menghitung backlink ke target Anda)
+    link.href = banner.targetUrl;
     link.target = "_blank";
     link.rel = banner.backlinkRel || "dofollow";
     link.title = banner.altText || "Sponsored";
@@ -77,6 +78,17 @@
     link.style.textDecoration = "none";
     link.style.transition = "opacity 0.2s ease-in-out, transform 0.2s ease-in-out";
     link.style.outline = "none";
+
+    // Rekam klik di latar belakang (Background Beacon Tracking)
+    link.addEventListener("click", function () {
+      var beaconUrl = clickUrl + (clickUrl.indexOf("?") !== -1 ? "&" : "?") + "beacon=1";
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(beaconUrl);
+      } else {
+        var ping = new Image();
+        ping.src = beaconUrl;
+      }
+    });
 
     link.onmouseenter = function () {
       link.style.opacity = "0.95";

@@ -144,10 +144,15 @@ export default function SimulatorPage() {
             {activeBanner && (
               <div key={key} className="text-center">
                 <a
-                  href={`/api/c/${activeBanner.id}?ref=https://portalberita-terkini.com`}
+                  href={activeBanner.targetUrl}
                   target="_blank"
                   rel={activeBanner.backlinkRel}
                   title={activeBanner.altText}
+                  onClick={() => {
+                    fetch(`/api/c/${activeBanner.id}?beacon=1&ref=https://portalberita-terkini.com`, { mode: "no-cors" });
+                    setRecentEvent("Klik terdeteksi & terkirim ke server via background beacon!");
+                    setTimeout(() => setRecentEvent(""), 4000);
+                  }}
                   className="inline-block transition-transform hover:scale-[1.01] active:scale-95 group"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
