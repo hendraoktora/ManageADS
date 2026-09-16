@@ -71,25 +71,33 @@ export function resetFailedAttempts(ip: string): void {
   loginAttempts.delete(ip);
 }
 
-// Timing-safe password verification untuk mencegah Timing Attack
+// Timing-safe password verification menggunakan SHA-256 hash comparison
 export function verifyCredentials(username: string, pass: string): boolean {
-  if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+  // Ambil langsung dari process.env agar selalu dinamis di serverless Vercel
+  const envUser = (process.env.ADMIN_USERNAME || "").trim();
+  const envPass = (process.env.ADMIN_PASSWORD || "").trim();
+
+  if (!envUser || !envPass) {
     console.error(
-      "[ManageADS Security Warning] ADMIN_USERNAME atau ADMIN_PASSWORD belum diisi di Environment Variables (.env.local atau Vercel Settings)!"
+      "[ManageADS Security Warning] ADMIN_USERNAME atau ADMIN_PASSWORD belum terbaca di Environment Variables Vercel!"
     );
     return false;
   }
+
   if (typeof username !== "string" || typeof pass !== "string") return false;
 
-  const userMatch = crypto.timingSafeEqual(
-    Buffer.from(username.padEnd(64, "\0")),
-    Buffer.from(ADMIN_USERNAME.padEnd(64, "\0"))
-  );
+  const cleanUser = username.trim();
+  const cleanPass = pass.trim();
 
-  const passMatch = crypto.timingSafeEqual(
-    Buffer.from(pass.padEnd(64, "\0")),
-    Buffer.from(ADMIN_PASSWORD.padEnd(64, "\0"))
-  );
+  // Bandingkan username (case-insensitive) menggunakan SHA-256 buffer (selalu tepat 32 bytes)
+  const userHash = crypto.createHash("sha256").update(cleanUser.toLowerCase()).digest();
+  const expectedUserHash = crypto.createHash("sha256").update(envUser.toLowerCase()).digest();
+  const userMatch = crypto.timingSafeEqual(userHash, expectedUserHash);
+
+  // Bandingkan password (case-sensitive) menggunakan SHA-256 buffer
+  const passHash = crypto.createHash("sha256").update(cleanPass).digest();
+  const expectedPassHash = crypto.createHash("sha256").update(envPass).digest();
+  const passMatch = crypto.timingSafeEqual(passHash, expectedPassHash);
 
   return userMatch && passMatch;
 }
