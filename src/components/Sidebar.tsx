@@ -10,7 +10,6 @@ import {
   Bell,
   Settings,
   HelpCircle,
-  Eye,
   LogOut,
 } from "lucide-react";
 
@@ -22,7 +21,6 @@ export default function Sidebar() {
     { href: "/banners", icon: ImageIcon, label: "Banners" },
     { href: "/publishers", icon: Globe, label: "Publishers" },
     { href: "/analytics", icon: Activity, label: "Analytics" },
-    { href: "/simulator", icon: Eye, label: "Simulator" },
   ];
 
   return (

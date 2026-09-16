@@ -9,7 +9,6 @@ const PUBLIC_PATHS = [
   "/api/b/",      // Endpoint widget & direct image
   "/api/c/",      // Endpoint click tracking redirect
   "/widget.js",   // Script widget klien
-  "/test-widget.html",
   "/favicon.ico",
 ];
 
@@ -22,10 +21,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/static") ||
     pathname.includes(".")
   ) {
-    // Kecuali halaman khusus yang ingin kita lindungi
-    if (!pathname.endsWith(".html") || pathname === "/test-widget.html") {
-      return NextResponse.next();
-    }
+    return NextResponse.next();
   }
 
   // Cek apakah request menuju ke path publik

@@ -55,14 +55,13 @@ export default function HeroBento({ onOpenCreate, activePublishersCount }: HeroB
           </div>
         </div>
 
-        {/* Action Button matching reference image */}
+        {/* Action Button */}
         <div className="flex items-center gap-3">
           <Link
-            href="/simulator"
-            className="px-4 py-2 rounded-full bg-white/80 hover:bg-white text-gray-800 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+            href="/banners"
+            className="px-4 py-2.5 rounded-full bg-white/80 hover:bg-white text-gray-800 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
           >
-            <Play size={13} fill="currentColor" />
-            <span>Lihat Simulator Web</span>
+            <span>Lihat Semua Banner</span>
           </Link>
 
           <button

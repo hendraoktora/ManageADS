@@ -48,7 +48,7 @@ export default function PublishersTable({ publishers, onDeleted }: PublishersTab
             {publishers.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-gray-400">
-                  Belum ada website mitra yang memasang widget. Gunakan menu Simulator untuk mencoba!
+                  Belum ada website mitra yang memasang widget iklan Anda.
                 </td>
               </tr>
             ) : (
