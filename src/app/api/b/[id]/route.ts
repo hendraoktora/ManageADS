@@ -44,6 +44,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       banner: {
         id: banner.id,
         imageUrl: banner.imageUrl,
+        mediaType: banner.mediaType || (/\.(mp4|webm|ogg)(\?.*)?$/i.test(banner.imageUrl) ? "video" : "image"),
         targetUrl: banner.targetUrl,
         altText: banner.altText,
         size: banner.size,

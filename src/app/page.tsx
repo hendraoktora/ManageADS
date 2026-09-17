@@ -9,7 +9,7 @@ import PublishersTable from "@/components/PublishersTable";
 import EmbedModal from "@/components/EmbedModal";
 import CreateBannerModal from "@/components/CreateBannerModal";
 import { Banner, Publisher } from "@/lib/db";
-import { Code2, Edit3, ExternalLink, Sparkles, Plus, Image as ImageIcon, Trash2 } from "lucide-react";
+import { Code2, Edit3, ExternalLink, Sparkles, Plus, Image as ImageIcon, Trash2, Video } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -151,6 +151,11 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <span className="text-xs font-bold text-gray-800 line-clamp-1">{banner.name}</span>
                   <div className="flex items-center gap-1.5 shrink-0">
+                    {(banner.mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(banner.imageUrl)) && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 flex items-center gap-1">
+                        <Video size={10} /> Video
+                      </span>
+                    )}
                     <button
                       onClick={() => handleToggleStatus(banner)}
                       title={banner.isActive ? "Klik untuk Nonaktifkan" : "Klik untuk Aktifkan"}
@@ -168,14 +173,25 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Banner Image Preview */}
+                {/* Banner Media Preview (Image / Video) */}
                 <div className="h-28 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center mb-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={banner.imageUrl}
-                    alt={banner.altText}
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  {banner.mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(banner.imageUrl) ? (
+                    <video
+                      src={banner.imageUrl}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="max-h-full max-w-full object-cover w-full h-full bg-black"
+                    />
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={banner.imageUrl}
+                      alt={banner.altText}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-4">

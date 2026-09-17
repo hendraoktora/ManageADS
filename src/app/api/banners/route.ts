@@ -11,19 +11,22 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, targetUrl, imageUrl, altText, size, backlinkRel, isActive } = body;
+    const { name, targetUrl, imageUrl, mediaType, altText, size, backlinkRel, isActive } = body;
 
     if (!name || !targetUrl || !imageUrl) {
       return NextResponse.json(
-        { success: false, message: "Nama, target URL, dan gambar banner wajib diisi." },
+        { success: false, message: "Nama, target URL, dan media banner wajib diisi." },
         { status: 400 }
       );
     }
+
+    const isVideo = mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(imageUrl);
 
     const banner = await createBanner({
       name,
       targetUrl,
       imageUrl,
+      mediaType: isVideo ? "video" : "image",
       altText: altText || name,
       size: size || "responsive",
       backlinkRel: backlinkRel || "dofollow",

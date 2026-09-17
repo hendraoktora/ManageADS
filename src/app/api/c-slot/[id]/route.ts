@@ -40,6 +40,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         order: slide.order,
         name: banner.name,
         imageUrl: banner.imageUrl,
+        mediaType: banner.mediaType || (/\.(mp4|webm|ogg)(\?.*)?$/i.test(banner.imageUrl) ? "video" : "image"),
         targetUrl: banner.targetUrl,
         altText: banner.altText,
         backlinkRel: banner.backlinkRel,

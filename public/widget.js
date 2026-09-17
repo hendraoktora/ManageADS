@@ -130,29 +130,60 @@
       link.style.transform = "scale(1)";
     };
 
-    var img = document.createElement("img");
-    img.src = banner.imageUrl;
-    img.alt = banner.altText || "Iklan";
-    img.loading = "lazy";
-    img.style.maxWidth = "100%";
-    img.style.height = "auto";
-    img.style.display = "block";
-    img.style.borderRadius = "8px";
-    img.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+    var media = createMediaElement(banner, true, false);
+    link.appendChild(media);
+    container.appendChild(link);
+  }
 
-    if (banner.size === "728x90") {
-      img.style.width = "728px";
-      img.style.maxHeight = "90px";
-    } else if (banner.size === "300x250") {
-      img.style.width = "300px";
-      img.style.maxHeight = "250px";
-    } else if (banner.size === "160x600") {
-      img.style.width = "160px";
-      img.style.maxHeight = "600px";
+  function isVideoMedia(item) {
+    if (item.mediaType === "video") return true;
+    var url = item.imageUrl || "";
+    return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
+  }
+
+  function createMediaElement(item, isFirst, isCarousel) {
+    var isVideo = isVideoMedia(item);
+    var el;
+
+    if (isVideo) {
+      el = document.createElement("video");
+      el.src = item.imageUrl;
+      el.autoplay = true;
+      el.loop = true;
+      el.muted = true;
+      el.playsInline = true;
+      el.setAttribute("autoplay", "");
+      el.setAttribute("muted", "");
+      el.setAttribute("loop", "");
+      el.setAttribute("playsinline", "");
+      el.style.objectFit = "cover";
+    } else {
+      el = document.createElement("img");
+      el.src = item.imageUrl;
+      el.alt = item.altText || item.name || "Iklan";
+      el.loading = isFirst !== false ? "eager" : "lazy";
+      el.style.objectFit = "contain";
     }
 
-    link.appendChild(img);
-    container.appendChild(link);
+    el.style.maxWidth = "100%";
+    el.style.height = "auto";
+    el.style.display = "block";
+    el.style.borderRadius = isCarousel ? "12px" : "8px";
+    el.style.boxShadow = isCarousel ? "none" : "0 4px 12px rgba(0,0,0,0.08)";
+
+    var sz = item.size || "responsive";
+    if (sz === "728x90") {
+      el.style.width = "728px";
+      el.style.maxHeight = "90px";
+    } else if (sz === "300x250") {
+      el.style.width = "300px";
+      el.style.maxHeight = "250px";
+    } else if (sz === "160x600") {
+      el.style.width = "160px";
+      el.style.maxHeight = "600px";
+    }
+
+    return el;
   }
 
   function renderCarousel(container, carousel, host) {
@@ -213,27 +244,8 @@
           }
         });
 
-        var img = document.createElement("img");
-        img.src = slide.imageUrl;
-        img.alt = slide.altText || "Iklan";
-        img.loading = idx === 0 ? "eager" : "lazy";
-        img.style.maxWidth = "100%";
-        img.style.height = "auto";
-        img.style.display = "block";
-        img.style.borderRadius = "12px";
-
-        if (carousel.size === "728x90") {
-          img.style.width = "728px";
-          img.style.maxHeight = "90px";
-        } else if (carousel.size === "300x250") {
-          img.style.width = "300px";
-          img.style.maxHeight = "250px";
-        } else if (carousel.size === "160x600") {
-          img.style.width = "160px";
-          img.style.maxHeight = "600px";
-        }
-
-        link.appendChild(img);
+        var media = createMediaElement(slide, idx === 0, true);
+        link.appendChild(media);
         wrapper.appendChild(link);
         slideElements.push(link);
       })(slides[k], k);

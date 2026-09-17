@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Banner } from "@/lib/db";
-import { X, Sparkles, Image as ImageIcon, Link as LinkIcon, Check, Eye } from "lucide-react";
+import { X, Sparkles, Image as ImageIcon, Link as LinkIcon, Check, Eye, Video } from "lucide-react";
 
 interface CreateBannerModalProps {
   bannerToEdit?: Banner | null;
@@ -33,6 +33,24 @@ const PRESET_IMAGES = [
   },
 ];
 
+const PRESET_VIDEOS = [
+  {
+    name: "Tech Showcase (MP4)",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    size: "728x90",
+  },
+  {
+    name: "Digital Creative Loop (MP4)",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    size: "300x250",
+  },
+  {
+    name: "Dynamic Speed Ad (MP4)",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    size: "728x90",
+  },
+];
+
 export default function CreateBannerModal({
   bannerToEdit,
   onClose,
@@ -40,6 +58,12 @@ export default function CreateBannerModal({
 }: CreateBannerModalProps) {
   const [name, setName] = useState(bannerToEdit?.name || "");
   const [targetUrl, setTargetUrl] = useState(bannerToEdit?.targetUrl || "https://mywebsite.com/promo");
+  const [mediaType, setMediaType] = useState<"image" | "video">(
+    bannerToEdit?.mediaType ||
+      (bannerToEdit?.imageUrl && /\.(mp4|webm|ogg)(\?.*)?$/i.test(bannerToEdit.imageUrl)
+        ? "video"
+        : "image")
+  );
   const [imageUrl, setImageUrl] = useState(
     bannerToEdit?.imageUrl || PRESET_IMAGES[0].url
   );
@@ -69,6 +93,7 @@ export default function CreateBannerModal({
           name,
           targetUrl,
           imageUrl,
+          mediaType,
           altText,
           size,
           backlinkRel,
@@ -101,7 +126,7 @@ export default function CreateBannerModal({
               <span>{bannerToEdit ? "Perbarui Visual Iklan" : "Buat Banner Iklan Baru"}</span>
             </div>
             <h3 className="text-xl font-bold text-gray-900">
-              {bannerToEdit ? "Edit Banner & Visual" : "Konfigurasi Banner Baru"}
+              {bannerToEdit ? "Edit Banner & Media" : "Konfigurasi Banner Baru"}
             </h3>
           </div>
           <button
@@ -134,6 +159,50 @@ export default function CreateBannerModal({
             />
           </div>
 
+          {/* Tipe Media: Gambar vs Video */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              Tipe Format Media:
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-gray-100 border border-gray-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setMediaType("image");
+                  if (imageUrl.endsWith(".mp4") || imageUrl.endsWith(".webm")) {
+                    setImageUrl(PRESET_IMAGES[0].url);
+                  }
+                }}
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  mediaType === "image"
+                    ? "bg-white text-gray-900 shadow-xs"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                <ImageIcon size={14} />
+                <span>Gambar (JPG/PNG/WebP)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMediaType("video");
+                  if (!imageUrl.endsWith(".mp4") && !imageUrl.endsWith(".webm")) {
+                    setImageUrl(PRESET_VIDEOS[0].url);
+                  }
+                }}
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  mediaType === "video"
+                    ? "bg-white text-rose-600 shadow-xs"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                <Video size={14} className={mediaType === "video" ? "text-rose-500" : "text-gray-400"} />
+                <span>Video Gerak (MP4 / WebM)</span>
+              </button>
+            </div>
+          </div>
+
           {/* Target Website URL */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
@@ -155,19 +224,27 @@ export default function CreateBannerModal({
             </p>
           </div>
 
-          {/* Image URL & Preset Picker */}
+          {/* Media URL & Preset Picker */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              URL Visual Gambar Banner:
+              {mediaType === "video" ? "URL File Video (MP4 / WebM Direct Link):" : "URL Visual Gambar Banner:"}
             </label>
             <div className="relative">
-              <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              {mediaType === "video" ? (
+                <Video size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-rose-500" />
+              ) : (
+                <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              )}
               <input
                 type="url"
                 required
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://.../gambar-banner.jpg"
+                placeholder={
+                  mediaType === "video"
+                    ? "https://domain-anda.com/video-promo.mp4"
+                    : "https://.../gambar-banner.jpg"
+                }
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-gray-900 focus:outline-none text-sm text-gray-900"
               />
             </div>
@@ -175,7 +252,7 @@ export default function CreateBannerModal({
             {/* Quick preset selector */}
             <div className="mt-2 flex flex-wrap gap-2">
               <span className="text-[11px] text-gray-400 py-1">Pilih Contoh:</span>
-              {PRESET_IMAGES.map((preset, i) => (
+              {(mediaType === "video" ? PRESET_VIDEOS : PRESET_IMAGES).map((preset, i) => (
                 <button
                   type="button"
                   key={i}
@@ -191,21 +268,33 @@ export default function CreateBannerModal({
             </div>
 
             {/* Visual Live Preview Box */}
-            <div className="mt-3 p-3 rounded-2xl bg-gray-50 border border-dashed border-gray-200 flex flex-col items-center justify-center min-h-[90px]">
-              <div className="text-[10px] text-gray-400 mb-1 flex items-center gap-1 font-semibold uppercase">
+            <div className="mt-3 p-3 rounded-2xl bg-gray-50 border border-dashed border-gray-200 flex flex-col items-center justify-center min-h-[100px]">
+              <div className="text-[10px] text-gray-400 mb-1.5 flex items-center gap-1 font-semibold uppercase">
                 <Eye size={11} />
-                Pratinjau Visual Gambar
+                Pratinjau {mediaType === "video" ? "Video Banner" : "Visual Gambar"}
               </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imageUrl}
-                alt="Preview"
-                className="max-h-24 max-w-full rounded-md object-contain shadow-xs"
-                onError={(e) => {
-                  (e.target as any).src =
-                    "https://placehold.co/728x90/e2e8f0/64748b?text=Gambar+Tidak+Dapat+Dimuat";
-                }}
-              />
+
+              {mediaType === "video" ? (
+                <video
+                  src={imageUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="max-h-28 max-w-full rounded-md object-contain shadow-xs bg-black"
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="max-h-24 max-w-full rounded-md object-contain shadow-xs"
+                  onError={(e) => {
+                    (e.target as any).src =
+                      "https://placehold.co/728x90/e2e8f0/64748b?text=Gambar+Tidak+Dapat+Dimuat";
+                  }}
+                />
+              )}
             </div>
           </div>
 
@@ -246,7 +335,7 @@ export default function CreateBannerModal({
           {/* Alt text for SEO */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              Alt Text Gambar (Anchor SEO):
+              Judul / Alt Text Media (Anchor SEO):
             </label>
             <input
               type="text"
@@ -271,7 +360,7 @@ export default function CreateBannerModal({
               disabled={loading}
               className="px-6 py-2 rounded-full bg-[#111827] hover:bg-black text-[#D5F639] text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
             >
-              {loading ? "Menyimpan..." : bannerToEdit ? "Simpan Perubahan Visual" : "Simpan & Buat Banner"}
+              {loading ? "Menyimpan..." : bannerToEdit ? "Simpan Perubahan Media" : "Simpan & Buat Banner"}
             </button>
           </div>
         </form>

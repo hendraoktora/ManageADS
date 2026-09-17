@@ -351,12 +351,23 @@ curl -X POST "${origin}/api/c/${banner!.id}?beacon=1&ref=app.nama-mitra.com"`,
           ) : (
             <>
               <div className="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex items-center justify-center overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={banner!.imageUrl}
-                  alt={banner!.altText}
-                  className="rounded-lg max-h-28 max-w-full object-contain shadow-xs"
-                />
+                {banner!.mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(banner!.imageUrl) ? (
+                  <video
+                    src={banner!.imageUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="rounded-lg max-h-28 max-w-full object-contain shadow-xs bg-black"
+                  />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={banner!.imageUrl}
+                    alt={banner!.altText}
+                    className="rounded-lg max-h-28 max-w-full object-contain shadow-xs"
+                  />
+                )}
               </div>
               <div className="flex items-center justify-between text-[11px] text-gray-400 mt-2">
                 <span>Ukuran: {banner!.size}</span>

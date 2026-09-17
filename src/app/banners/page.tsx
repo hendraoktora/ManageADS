@@ -19,6 +19,7 @@ import {
   Sparkles,
   Play,
   RotateCw,
+  Video,
 } from "lucide-react";
 
 export default function BannersPage() {
@@ -202,10 +203,16 @@ export default function BannersPage() {
                         <h4 className="font-bold text-sm text-gray-900 truncate" title={banner.name}>
                           {banner.name}
                         </h4>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
                             {banner.size}
                           </span>
+                          {(banner.mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(banner.imageUrl)) && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 flex items-center gap-1">
+                              <Video size={10} />
+                              <span>Video</span>
+                            </span>
+                          )}
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
                             rel=&quot;{banner.backlinkRel}&quot;
                           </span>
@@ -227,17 +234,28 @@ export default function BannersPage() {
                       </button>
                     </div>
 
-                    {/* Preview Gambar */}
+                    {/* Preview Media (Gambar / Video) */}
                     <div className="w-full h-36 bg-gray-200/60 rounded-xl overflow-hidden mb-3 border border-gray-200 flex items-center justify-center relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={banner.imageUrl}
-                        alt={banner.altText}
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          (e.target as any).src = "https://placehold.co/600x400/e2e8f0/64748b?text=Gambar+Rusak";
-                        }}
-                      />
+                      {banner.mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(banner.imageUrl) ? (
+                        <video
+                          src={banner.imageUrl}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 bg-black"
+                        />
+                      ) : (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={banner.imageUrl}
+                          alt={banner.altText}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            (e.target as any).src = "https://placehold.co/600x400/e2e8f0/64748b?text=Gambar+Rusak";
+                          }}
+                        />
+                      )}
                     </div>
 
                     {/* Info Target URL */}
@@ -375,12 +393,23 @@ export default function BannersPage() {
                                 </span>
                                 {b ? (
                                   <>
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                      src={b.imageUrl}
-                                      alt={b.name}
-                                      className="w-9 h-6 rounded object-cover bg-gray-100 border border-gray-100 shrink-0"
-                                    />
+                                    {b.mediaType === "video" || /\.(mp4|webm|ogg)(\?.*)?$/i.test(b.imageUrl) ? (
+                                      <video
+                                        src={b.imageUrl}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        className="w-9 h-6 rounded object-cover bg-black shrink-0"
+                                      />
+                                    ) : (
+                                      /* eslint-disable-next-line @next/next/no-img-element */
+                                      <img
+                                        src={b.imageUrl}
+                                        alt={b.name}
+                                        className="w-9 h-6 rounded object-cover bg-gray-100 border border-gray-100 shrink-0"
+                                      />
+                                    )}
                                     <div className="truncate">
                                       <div className="text-xs font-semibold text-gray-800 truncate">{b.name}</div>
                                       <div className="text-[9px] text-gray-400 truncate">{b.targetUrl}</div>

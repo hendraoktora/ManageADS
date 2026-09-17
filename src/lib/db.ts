@@ -6,6 +6,7 @@ export interface Banner {
   name: string;
   targetUrl: string;
   imageUrl: string;
+  mediaType?: "image" | "video";
   altText: string;
   size: "728x90" | "300x250" | "160x600" | "responsive";
   backlinkRel: "dofollow" | "nofollow" | "sponsored";
