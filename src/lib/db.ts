@@ -37,10 +37,30 @@ export interface EventLog {
   timestamp: string;
 }
 
+export interface CarouselSlide {
+  bannerId: string;
+  order: number;
+}
+
+export interface CarouselSlot {
+  id: string;
+  name: string;
+  size: "728x90" | "300x250" | "160x600" | "responsive";
+  intervalMs: number;
+  autoPlay: boolean;
+  showDots: boolean;
+  showArrows: boolean;
+  isActive: boolean;
+  slides: CarouselSlide[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface DatabaseSchema {
   banners: Banner[];
   publishers: Publisher[];
   events: EventLog[];
+  carousels: CarouselSlot[];
 }
 
 // Konfigurasi Cloud Database (Upstash Redis / Vercel KV)
@@ -58,6 +78,7 @@ const SEED_DATA: DatabaseSchema = {
   banners: [],
   publishers: [],
   events: [],
+  carousels: [],
 };
 
 // In-Memory Cache untuk performa tinggi
@@ -86,6 +107,7 @@ async function ensureDb(): Promise<DatabaseSchema> {
             banners: parsed.banners || [],
             publishers: parsed.publishers || [],
             events: parsed.events || [],
+            carousels: parsed.carousels || [],
           };
           lastFetchTime = Date.now();
           return memoryCache;
@@ -115,7 +137,13 @@ async function ensureDb(): Promise<DatabaseSchema> {
 
   try {
     const raw = fs.readFileSync(DB_FILE, "utf-8");
-    return JSON.parse(raw) as DatabaseSchema;
+    const parsed = JSON.parse(raw);
+    return {
+      banners: parsed.banners || [],
+      publishers: parsed.publishers || [],
+      events: parsed.events || [],
+      carousels: parsed.carousels || [],
+    };
   } catch (err) {
     return { ...SEED_DATA };
   }
@@ -350,9 +378,67 @@ export async function getStats(): Promise<any> {
     activePublishers,
     totalPublishers,
     activeBanners: db.banners.filter((b) => b.isActive).length,
+    totalCarousels: (db.carousels || []).length,
     chartData: Object.values(days),
     isCloudDb: IS_CLOUD_DB,
   };
+}
+
+export async function getCarousels(): Promise<CarouselSlot[]> {
+  const db = await ensureDb();
+  return db.carousels || [];
+}
+
+export async function getCarouselById(id: string): Promise<CarouselSlot | undefined> {
+  const db = await ensureDb();
+  return (db.carousels || []).find((c) => c.id === id);
+}
+
+export async function createCarousel(
+  data: Omit<CarouselSlot, "id" | "createdAt" | "updatedAt">
+): Promise<CarouselSlot> {
+  const db = await ensureDb();
+  const newCarousel: CarouselSlot = {
+    ...data,
+    id: `car-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  db.carousels = db.carousels || [];
+  db.carousels.unshift(newCarousel);
+  await saveDb(db);
+  return newCarousel;
+}
+
+export async function updateCarousel(
+  id: string,
+  data: Partial<Omit<CarouselSlot, "id" | "createdAt">>
+): Promise<CarouselSlot | null> {
+  const db = await ensureDb();
+  db.carousels = db.carousels || [];
+  const index = db.carousels.findIndex((c) => c.id === id);
+  if (index === -1) return null;
+
+  db.carousels[index] = {
+    ...db.carousels[index],
+    ...data,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await saveDb(db);
+  return db.carousels[index];
+}
+
+export async function deleteCarousel(id: string): Promise<boolean> {
+  const db = await ensureDb();
+  db.carousels = db.carousels || [];
+  const initialLength = db.carousels.length;
+  db.carousels = db.carousels.filter((c) => c.id !== id);
+  if (db.carousels.length !== initialLength) {
+    await saveDb(db);
+    return true;
+  }
+  return false;
 }
 
 export async function clearDatabase(): Promise<void> {
@@ -360,6 +446,7 @@ export async function clearDatabase(): Promise<void> {
     banners: [],
     publishers: [],
     events: [],
+    carousels: [],
   };
   await saveDb(emptyDb);
 }

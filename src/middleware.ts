@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   "/api/auth",
   "/api/b/",      // Endpoint widget & direct image
   "/api/c/",      // Endpoint click tracking redirect
+  "/api/c-slot/", // Endpoint carousel widget & mobile
   "/widget.js",   // Script widget klien
   "/favicon.ico",
 ];
