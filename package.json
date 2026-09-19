@@ -1,6 +1,7 @@
 {
   "name": "manage-ads",
   "version": "0.1.0",
+  "author": "Hendra Oktora <https://hendraoktora.com>",
   "private": true,
   "scripts": {
     "dev": "next dev",

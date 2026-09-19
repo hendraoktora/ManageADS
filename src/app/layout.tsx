@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   applicationName: "ManageADS",
   generator: "Hendra Oktora",
   other: {
-    "author": "Hendra Oktora",
-    "developer": "Hendra Oktora (https://hendraoktora.com)",
-    "copyright": "Hendra Oktora",
+    author: "by Hendra Oktora / https://hendraoktora.com",
+    developer: "Hendra Oktora / https://hendraoktora.com",
+    copyright: "Hendra Oktora",
   },
 };
 
@@ -48,6 +48,8 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
+        <meta name="author" content="by Hendra Oktora / https://hendraoktora.com" />
+        <link rel="author" href="https://hendraoktora.com" />
         {/* Structured Data for Googlebot / Search Engine Crawlers */}
         <script
           type="application/ld+json"
